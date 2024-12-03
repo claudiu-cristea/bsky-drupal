@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace BSkyDrupal;
@@ -17,11 +18,11 @@ class App
     private BlueskyPostService $postService;
     private \PDO $pdo;
 
-    public function __construct(
-      private LoggerInterface $logger,
-    ) {}
+    public function __construct(private readonly LoggerInterface $logger)
+    {
+    }
 
-    function postText(string $text, string $url, \DateTimeImmutable $createdAt): void
+    public function postText(string $text, string $url, \DateTimeImmutable $createdAt): void
     {
         try {
             $post = Post::create($text);
@@ -33,7 +34,6 @@ class App
             $this->logger->error($exception->getMessage());
             throw $exception;
         }
-
     }
 
     public function processFeed(string $feedUrl): array
@@ -53,7 +53,7 @@ class App
         $newEntries = [];
         foreach ($xpath->query('//item', $doc) as $delta => $node) {
             $url = $xpath->query('//item/link', $node)->item($delta)->textContent;
-            if ($this->urlIsRegistered($url)) {
+            if ($this->isUrlRegistered($url)) {
                 continue;
             }
             $title = $xpath->query('//item/title', $node)->item($delta)->textContent;
@@ -105,13 +105,12 @@ class App
         return $this->pdo;
     }
 
-    protected function urlIsRegistered(string $url): bool
+    protected function isUrlRegistered(string $url): bool
     {
         $table = getenv('DB_TABLE');
         try {
             return (bool) $this->getConnection()->query("SELECT url FROM $table WHERE url = '$url'")->rowCount();
-        }
-        catch (\Throwable $throwable) {
+        } catch (\Throwable $throwable) {
             $this->logger->error($throwable->getMessage());
             throw $throwable;
         }
@@ -123,5 +122,4 @@ class App
         $now = date('Y-m-d H:i:s');
         $this->getConnection()->query("INSERT INTO $table (url, created) VALUES ('$url', '$now')");
     }
-
 }
