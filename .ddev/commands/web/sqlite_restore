@@ -1,0 +1,8 @@
+#!/bin/bash
+
+## Description: Restore SQLite database from a dump file
+## Usage: sqlite:restore [source]
+## Example: sqlite:restore /tmp/dump.txt
+
+sqlite3 $DB_DATABASE "DROP TABLE IF EXISTS $DB_TABLE"
+sqlite3 $DB_DATABASE < "$1"

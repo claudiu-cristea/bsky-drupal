@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Backs up the SQLite database
+## Usage: sqlite:backup [destination]
+## Example: ddev sqlite:backup /tmp/dump.txt
+
+sqlite3 $DB_DATABASE .dump > "$1"

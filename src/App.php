@@ -24,6 +24,11 @@ class App
 
     public function postText(string $text, string $url, \DateTimeImmutable $createdAt): void
     {
+        if ($this->isUrlRegistered($url)) {
+            // Already posted.
+            return;
+        }
+
         try {
             $post = Post::create($text);
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
@@ -54,6 +59,7 @@ class App
         foreach ($xpath->query('//item', $doc) as $delta => $node) {
             $url = $xpath->query('//item/link', $node)->item($delta)->textContent;
             if ($this->isUrlRegistered($url)) {
+                // Already posted.
                 continue;
             }
             $title = $xpath->query('//item/title', $node)->item($delta)->textContent;
@@ -83,24 +89,15 @@ class App
     private function getConnection(): \PDO
     {
         if (!isset($this->pdo)) {
-            $host = getenv('DB_HOST');
-            $db = getenv('DB_DATABASE');
-            $user = getenv('DB_USER');
-            $pass = getenv('DB_PASS');
             $table = getenv('DB_TABLE');
-
-            $this->pdo = new \PDO("mysql:host=$host;dbname=$db", $user, $pass);
-            if (!$this->pdo->query("SHOW TABLES LIKE '$table'")->rowCount()) {
-                $create = <<<SQL
-                    CREATE TABLE $table (
-                      url varchar(255) NOT NULL,
-                      created timestamp NOT NULL,
-                      PRIMARY KEY (url),
-                      KEY created (created)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-                    SQL;
-                $this->pdo->exec($create);
-            }
+            $this->pdo = new \PDO('sqlite:' . getenv('DB_DATABASE'));
+            $sql = <<<SQL
+                CREATE TABLE IF NOT EXISTS $table (
+                    url VARCHAR(255) NOT NULL PRIMARY KEY,
+                    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                SQL;
+            $this->pdo->query($sql);
         }
         return $this->pdo;
     }
@@ -109,7 +106,7 @@ class App
     {
         $table = getenv('DB_TABLE');
         try {
-            return (bool) $this->getConnection()->query("SELECT url FROM $table WHERE url = '$url'")->rowCount();
+            return (bool) $this->getConnection()->query("SELECT url FROM $table WHERE url = '$url'")->fetch();
         } catch (\Throwable $throwable) {
             $this->logger->error($throwable->getMessage());
             throw $throwable;
@@ -119,7 +116,6 @@ class App
     private function registerUrl(string $url): void
     {
         $table = getenv('DB_TABLE');
-        $now = date('Y-m-d H:i:s');
-        $this->getConnection()->query("INSERT INTO $table (url, created) VALUES ('$url', '$now')");
+        $this->getConnection()->query("INSERT INTO $table (url) VALUES ('$url')");
     }
 }
