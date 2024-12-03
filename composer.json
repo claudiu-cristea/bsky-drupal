@@ -1,11 +1,13 @@
 {
   "name": "claudiu-cristea/bsky-drupal",
   "type": "library",
-  "authors": {
-    "name": "Claudiu Cristea",
-    "homepage": "https://bsky.app/profile/claudiucristea.ro",
-    "role": "Maintainer"
-  },
+  "authors": [
+    {
+      "name": "Claudiu Cristea",
+      "homepage": "https://bsky.app/profile/claudiucristea.ro",
+      "role": "Maintainer"
+    }
+  ],
   "require": {
     "php": ">=8.3",
     "ext-dom": "*",
