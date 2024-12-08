@@ -1,0 +1,48 @@
+#!/bin/bash
+
+## Description:  Create a distribution
+## Usage: dist
+## Example: ddev
+
+PROJECT_DIR=/var/www/html
+GIT_TAG="$(git describe --tags 2> /dev/null)"
+GIT_HASH="$(git rev-parse --short=10 HEAD)"
+
+if [ "${GIT_TAG}" != "" ]
+then
+  DIST_ID="${GIT_TAG}"
+else
+  DIST_ID="${GIT_HASH}"
+fi
+
+echo "Building distribution $DIST_ID"
+
+DIST_DIR="${PROJECT_DIR}/dist/${DIST_ID}"
+
+rm -rf ${DIST_DIR}
+rm -rf ${DIST_DIR}.tar.gz
+mkdir ${DIST_DIR}
+
+# Copy all (tracked) files to the dist folder.
+git archive HEAD --worktree-attributes | tar -x -C  ${DIST_DIR}
+
+# Create the codebase.
+COMPOSER_MIRROR_PATH_REPOS=1 BUILD_DISTRO=yes composer --no-dev --no-interaction --optimize-autoloader --working-dir=${DIST_DIR} install
+
+# Delete development files.
+#rm -rd \
+#  ${DIST_DIR}/.gitattributes \
+#  ${DIST_DIR}/composer.json \
+#  ${DIST_DIR}/composer.lock \
+#  ${DIST_DIR}/script/ \
+#  ${DIST_DIR}/vendor/
+
+# Recursively remove .git directories.
+find ${DIST_DIR} -type d -name .git -prune -exec rm -rf {} \;
+
+# Create the package
+cd  ${PROJECT_DIR}/dist
+tar -zcf ${DIST_ID}.tar.gz ${DIST_ID}
+rm -rf ${DIST_ID}
+
+echo "Distribution ready: ${DIST_ID}.tar.gz"

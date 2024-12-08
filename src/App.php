@@ -32,7 +32,6 @@ class App
         try {
             $post = Post::create($text);
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
-            $post->setCreatedAt($createdAt);
             $this->getApi()->createRecord($post);
             $this->registerUrl($url);
         } catch (\Throwable $exception) {
