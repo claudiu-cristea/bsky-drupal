@@ -21,7 +21,7 @@ DIST_DIR="${PROJECT_DIR}/dist/${DIST_ID}"
 
 rm -rf ${DIST_DIR}
 rm -rf ${DIST_DIR}.tar.gz
-mkdir ${DIST_DIR}
+mkdir -p ${DIST_DIR}
 
 # Copy all (tracked) files to the dist folder.
 git archive HEAD --worktree-attributes | tar -x -C  ${DIST_DIR}
@@ -30,12 +30,10 @@ git archive HEAD --worktree-attributes | tar -x -C  ${DIST_DIR}
 COMPOSER_MIRROR_PATH_REPOS=1 BUILD_DISTRO=yes composer --no-dev --no-interaction --optimize-autoloader --working-dir=${DIST_DIR} install
 
 # Delete development files.
-#rm -rd \
-#  ${DIST_DIR}/.gitattributes \
-#  ${DIST_DIR}/composer.json \
-#  ${DIST_DIR}/composer.lock \
-#  ${DIST_DIR}/script/ \
-#  ${DIST_DIR}/vendor/
+rm -rd \
+  ${DIST_DIR}/.gitattributes \
+  ${DIST_DIR}/composer.json \
+  ${DIST_DIR}/composer.lock
 
 # Recursively remove .git directories.
 find ${DIST_DIR} -type d -name .git -prune -exec rm -rf {} \;
