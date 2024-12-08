@@ -32,8 +32,9 @@ class App
         try {
             $post = Post::create($text);
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
-            $this->getApi()->createRecord($post);
+            $response = $this->getApi()->createRecord($post);
             $this->registerUrl($url);
+            $this->logger->notice('Success: ' . $response->getCid() . ' ' . $response->getUri());
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw $exception;

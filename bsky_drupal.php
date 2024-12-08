@@ -33,5 +33,5 @@ foreach (FEEDS as $feedUrl => $type) {
         sleep(2);
         $count++;
     }
-    print "Posted $count items ($type)\n";
+    $logger->notice("Posted $count items ($type)");
 }
