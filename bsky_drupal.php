@@ -7,6 +7,7 @@ use BSkyDrupal\App;
 use BSkyDrupal\ExtensionFeedType;
 use BSkyDrupal\FeedTypeInterface;
 use Monolog\Handler\RotatingFileHandler;
+use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
 
@@ -19,7 +20,8 @@ const FEEDS = [
   'https://www.drupal.org/taxonomy/term/7234/feed' => ExtensionFeedType::class,
 ];
 
-$logger = (new Logger('bsky_drupal'))->pushHandler(
+$logger = new Logger('bsky_drupal');
+$logger->pushHandler(
     new RotatingFileHandler(
         rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log',
         3,
@@ -30,6 +32,7 @@ $logger = (new Logger('bsky_drupal'))->pushHandler(
         RotatingFileHandler::FILE_PER_MONTH,
     ),
 );
+$logger->pushHandler(new StreamHandler('php://stdout'));
 
 $app = new App($logger);
 
