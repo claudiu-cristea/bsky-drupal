@@ -34,7 +34,7 @@ class App
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
             $response = $this->getApi()->createRecord($post);
             $this->registerUrl($url);
-            $this->logger->notice('Success: ' . $response->getCid() . ' ' . $response->getUri());
+            $this->logger->notice('Success: ' . $response->getCid() . ': ' . $response->getUri());
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw $exception;

@@ -15,7 +15,8 @@
     "monolog/monolog": "^3.8",
     "nyholm/psr7": "^1.8",
     "potibm/phluesky": "^0.4.0",
-    "symfony/http-client": "^7.2"
+    "symfony/http-client": "^7.2",
+    "symfony/yaml": "^7.2"
   },
   "config": {
     "sort-packages": true,
