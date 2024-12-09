@@ -33,7 +33,7 @@ class ExtensionFeedType implements FeedTypeInterface
             return null;
         }
 
-        $extensionType ??= $info['type'];
+        $extensionType = $info['type'] ?? null;
 
         return $extensionType ? "new $extensionType release" : null;
     }
