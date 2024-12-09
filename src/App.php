@@ -10,6 +10,7 @@ use potibm\Bluesky\BlueskyApi;
 use potibm\Bluesky\BlueskyApiInterface;
 use potibm\Bluesky\BlueskyPostService;
 use potibm\Bluesky\Feed\Post;
+use potibm\Bluesky\Response\RecordResponse;
 use Psr\Log\LoggerInterface;
 
 class App
@@ -34,7 +35,7 @@ class App
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
             $response = $this->getApi()->createRecord($post);
             $this->registerUrl($url);
-            $this->logger->notice('Success: ' . $response->getCid() . ': ' . $response->getUri());
+            $this->success($response);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw $exception;
@@ -117,5 +118,12 @@ class App
     {
         $table = getenv('DB_TABLE');
         $this->getConnection()->query("INSERT INTO $table (url) VALUES ('$url')");
+    }
+
+    private function success(RecordResponse $response): void
+    {
+        $postId = $response->getUri()->getRecord();
+        $user = getenv('BSKY_USER');
+        $this->logger->notice("Success: https://bsky.app/profile/$user/post/$postId");
     }
 }

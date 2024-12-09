@@ -26,7 +26,12 @@ class ExtensionFeedType implements FeedTypeInterface
         $request = $requestFactory->createRequest('GET', $uri);
         $request->withHeader('Accept', 'application/json');
         $response = $httpClient->sendRequest($request);
-        $info = Yaml::parse($response->getBody()->getContents());
+
+        try {
+            $info = Yaml::parse($response->getBody()->getContents());
+        } catch (\Exception $e) {
+            return null;
+        }
 
         $extensionType ??= $info['type'];
 

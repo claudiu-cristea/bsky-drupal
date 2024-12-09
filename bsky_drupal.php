@@ -33,9 +33,8 @@ $logger = (new Logger('bsky_drupal'))->pushHandler(
 
 $app = new App($logger);
 
+$results = [];
 foreach (FEEDS as $feedUrl => $type) {
-    $count = 0;
-
     if (is_a($type, FeedTypeInterface::class, true)) {
         $getType = fn(string $url, string $title): ?string => $type::getMessage($url, $title);
     } elseif (is_string($type)) {
@@ -45,14 +44,27 @@ foreach (FEEDS as $feedUrl => $type) {
     }
 
     foreach ($app->processFeed($feedUrl) as [$url, $title, $date]) {
-        if ($message = $getType($url, $title) ) {
+        if ($message = $getType($url, $title)) {
             $printedDate = date('Y-m-d', $date->getTimestamp());
             $text = "#Drupal $message: $title ($printedDate). See $url";
             $app->postText($text, $url, $date);
 
-            sleep(2);
-            $count++;
+            // No hurry.
+            sleep(1);
+
+            $results[$message] ??= 0;
+            $results[$message]++;
         }
     }
-    $logger->notice("Posted $count items ($type)");
+}
+
+$posted = implode(', ', array_map(
+    fn(string $message): string => "$message ($results[$message])",
+    array_keys($results),
+));
+
+if (empty($posted)) {
+    $logger->notice('No posts');
+} else {
+    $logger->notice("Posted: $posted");
 }
