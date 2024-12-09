@@ -17,3 +17,8 @@ web_environment: []
 corepack_enable: false
 omit_containers:
     - db
+
+hooks:
+    post-start:
+        - exec: mkdir -p .ddev/bsky_drupal/db
+        - exec: mkdir -p .ddev/bsky_drupal/log

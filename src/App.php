@@ -90,8 +90,8 @@ class App
     private function getConnection(): \PDO
     {
         if (!isset($this->pdo)) {
-            $table = getenv('DB_TABLE');
-            $this->pdo = new \PDO('sqlite:' . getenv('DB_DATABASE'));
+            $table = getenv('BSKY_SQLITE_TABLE');
+            $this->pdo = new \PDO('sqlite:' . getenv('BSKY_SQLITE_DATABASE'));
             $sql = <<<SQL
                 CREATE TABLE IF NOT EXISTS $table (
                     url VARCHAR(255) NOT NULL PRIMARY KEY,
@@ -105,7 +105,7 @@ class App
 
     protected function isUrlRegistered(string $url): bool
     {
-        $table = getenv('DB_TABLE');
+        $table = getenv('BSKY_SQLITE_TABLE');
         try {
             return (bool) $this->getConnection()->query("SELECT url FROM $table WHERE url = '$url'")->fetch();
         } catch (\Throwable $throwable) {
@@ -116,7 +116,7 @@ class App
 
     private function registerUrl(string $url): void
     {
-        $table = getenv('DB_TABLE');
+        $table = getenv('BSKY_SQLITE_TABLE');
         $this->getConnection()->query("INSERT INTO $table (url) VALUES ('$url')");
     }
 

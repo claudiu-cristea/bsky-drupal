@@ -4,5 +4,5 @@
 ## Usage: sqlite:restore [source]
 ## Example: sqlite:restore /tmp/dump.txt
 
-sqlite3 $DB_DATABASE "DROP TABLE IF EXISTS $DB_TABLE"
-sqlite3 $DB_DATABASE < "$1"
+sqlite3 $BSKY_SQLITE_DATABASE "DROP TABLE IF EXISTS $BSKY_SQLITE_TABLE"
+sqlite3 $BSKY_SQLITE_DATABASE < "$1"

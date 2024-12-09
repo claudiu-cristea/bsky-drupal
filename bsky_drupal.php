@@ -21,7 +21,7 @@ const FEEDS = [
 
 $logger = (new Logger('bsky_drupal'))->pushHandler(
     new RotatingFileHandler(
-        __DIR__ . '/log/bsky_drupal.log',
+        rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log',
         3,
         Level::Debug,
         true,
