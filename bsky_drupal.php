@@ -4,11 +4,10 @@
 declare(strict_types=1);
 
 use BSkyDrupal\App;
-use BSkyDrupal\ExtensionFeedType;
+use BSkyDrupal\ExtensionReleaseFeedType;
 use BSkyDrupal\FeedTypeInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
-use Monolog\Level;
 use Monolog\Logger;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -17,21 +16,17 @@ const FEEDS = [
   'https://www.drupal.org/changes/drupal/rss.xml' => 'change record',
   'https://www.drupal.org/security/all/rss.xml' => 'security advisory',
   'https://www.drupal.org/section-blog/2603760/feed' => 'blog',
-  'https://www.drupal.org/taxonomy/term/7234/feed' => ExtensionFeedType::class,
+  'https://www.drupal.org/taxonomy/term/7234/feed' => ExtensionReleaseFeedType::class,
 ];
 
 $logger = new Logger('bsky_drupal');
-$logger->pushHandler(
-    new RotatingFileHandler(
-        rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log',
-        3,
-        Level::Debug,
-        true,
-        null,
-        false,
-        RotatingFileHandler::FILE_PER_MONTH,
-    ),
+
+$fileName = rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
+$fileHandler = (new RotatingFileHandler($fileName, 3))->setFilenameFormat(
+    '{filename}-{date}',
+    RotatingFileHandler::FILE_PER_MONTH,
 );
+$logger->pushHandler($fileHandler);
 $logger->pushHandler(new StreamHandler('php://stdout'));
 
 $app = new App($logger);

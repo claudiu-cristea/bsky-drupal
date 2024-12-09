@@ -8,7 +8,7 @@ use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 use Symfony\Component\Yaml\Yaml;
 
-class ExtensionFeedType implements FeedTypeInterface
+class ExtensionReleaseFeedType implements FeedTypeInterface
 {
     private const string CODE_URL = 'http://drupalcode.org/project';
 
@@ -19,9 +19,9 @@ class ExtensionFeedType implements FeedTypeInterface
         $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
 
         // Get project name.
-        $parts = explode('/', $url);
-        $projectName = $parts[count($parts) - 3];
-        $uri = $uriFactory->createUri(self::CODE_URL . "/$projectName/-/raw/HEAD/$projectName.info.yml");
+        $path = trim(parse_url($url, PHP_URL_PATH), '/');
+        [, $projectName, , $projectVersion] = explode('/', $path);
+        $uri = $uriFactory->createUri(self::CODE_URL . "/$projectName/-/raw/$projectVersion/$projectName.info.yml");
 
         $request = $requestFactory->createRequest('GET', $uri);
         $request->withHeader('Accept', 'application/json');
