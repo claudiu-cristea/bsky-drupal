@@ -34,7 +34,8 @@ class CompositeLogger extends AbstractLogger
      */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        if ($level <= Level::Notice->value) {
+        $levelValue = $level instanceof Level ? $level->value : $level;
+        if ($levelValue <= Level::Notice->value) {
             $this->infoLogger->log($level, $message, $context);
         } else {
             $this->errorLogger->log($level, $message, $context);
