@@ -20,14 +20,14 @@ class ExtensionReleaseFeedType implements FeedTypeInterface
 
         // Get project name.
         $path = trim(parse_url($url, PHP_URL_PATH), '/');
-        [, $projectName, , $projectVersion] = explode('/', $path);
-        $uri = $uriFactory->createUri(self::CODE_URL . "/$projectName/-/raw/$projectVersion/$projectName.info.yml");
+        [/* project */, $name, /* release */, $version] = explode('/', $path);
+        $uri = $uriFactory->createUri(self::CODE_URL . "/$name/-/raw/$version/$name.info.yml");
 
-        $request = $requestFactory->createRequest('GET', $uri);
-        $request->withHeader('Accept', 'application/json');
-        $response = $httpClient->sendRequest($request);
 
         try {
+            $request = $requestFactory->createRequest('GET', $uri);
+            $request->withHeader('Accept', 'application/json');
+            $response = $httpClient->sendRequest($request);
             $info = Yaml::parse($response->getBody()->getContents());
         } catch (\Exception $e) {
             return null;
