@@ -21,6 +21,7 @@ class ExtensionReleaseFeedType implements FeedTypeInterface
         // Get project name.
         $path = trim(parse_url($url, PHP_URL_PATH), '/');
         [/* project */, $name, /* release */, $version] = explode('/', $path);
+        $version = !str_ends_with($version, '-dev') ? $version : substr($version, 0, -4);
         $uri = $uriFactory->createUri(self::CODE_URL . "/$name/-/raw/$version/$name.info.yml");
 
 
