@@ -1,6 +1,6 @@
 /.ddev/bsky_drupal/db/
+/.ddev/bsky_drupal/dist/
 /.ddev/bsky_drupal/log/
 /.env
 /composer.lock
-/dist/
 /vendor/

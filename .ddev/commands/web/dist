@@ -17,7 +17,7 @@ fi
 
 echo "Building distribution $DIST_ID"
 
-DIST_DIR="${PROJECT_DIR}/dist/${DIST_ID}"
+DIST_DIR="${PROJECT_DIR}/.ddev/bsky_drupal/dist/${DIST_ID}"
 
 rm -rf ${DIST_DIR}
 rm -rf ${DIST_DIR}.tar.gz
@@ -39,7 +39,7 @@ rm -rd \
 find ${DIST_DIR} -type d -name .git -prune -exec rm -rf {} \;
 
 # Create the package
-cd  ${PROJECT_DIR}/dist
+cd ${PROJECT_DIR}/.ddev/bsky_drupal/dist
 tar -zcf ${DIST_ID}.tar.gz ${DIST_ID}
 rm -rf ${DIST_ID}
 
