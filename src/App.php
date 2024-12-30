@@ -23,11 +23,11 @@ class App
     {
     }
 
-    public function postText(string $text, string $url, \DateTimeImmutable $createdAt): void
+    public function postText(string $text, string $url, \DateTimeImmutable $createdAt): bool
     {
         if ($this->isUrlRegistered($url)) {
             // Already posted.
-            return;
+            return false;
         }
 
         try {
@@ -40,35 +40,7 @@ class App
             $this->logger->error($exception->getMessage());
             throw $exception;
         }
-    }
-
-    public function processFeed(string $feedUrl): array
-    {
-        $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
-        $request = $requestFactory->createRequest('GET', $feedUrl);
-
-        $xml = Psr18ClientDiscovery::find()
-          ->sendRequest($request)
-          ->getBody()
-          ->getContents();
-
-        $doc = new \DOMDocument();
-        $doc->loadXML($xml);
-        $xpath = new \DOMXPath($doc);
-
-        $newEntries = [];
-        foreach ($xpath->query('//item', $doc) as $delta => $node) {
-            $url = $xpath->query('//item/link', $node)->item($delta)->textContent;
-            if ($this->isUrlRegistered($url)) {
-                // Already posted.
-                continue;
-            }
-            $title = $xpath->query('//item/title', $node)->item($delta)->textContent;
-            $date =  $xpath->query('//item/pubDate', $node)->item($delta)->textContent;
-            $newEntries[] = [$url, $title, new \DateTimeImmutable($date)];
-        }
-
-        return array_reverse($newEntries);
+        return true;
     }
 
     private function getPostService(): BlueskyPostService

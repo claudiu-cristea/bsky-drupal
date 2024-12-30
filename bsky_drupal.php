@@ -4,20 +4,46 @@
 declare(strict_types=1);
 
 use BSkyDrupal\App;
-use BSkyDrupal\ExtensionReleaseFeedType;
-use BSkyDrupal\FeedTypeInterface;
 use BSkyDrupal\Logger\CompositeLogger;
+use BSkyDrupal\Model\Item;
+use BSkyDrupal\Plugin\DrupalDotOrgFeed;
+use BSkyDrupal\Plugin\ExtensionRelease;
+use BSkyDrupal\SourceInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-const FEEDS = [
-  'https://www.drupal.org/changes/drupal/rss.xml' => '#Drupal core change',
-  'https://www.drupal.org/security/all/rss.xml' => '#Drupal security advisory',
-  'https://www.drupal.org/section-blog/2603760/feed' => '#Drupal blog entry',
-  'https://www.drupal.org/taxonomy/term/7234/feed' => ExtensionReleaseFeedType::class,
-  'https://www.drupal.org/project/project_module/feed/full' => 'New #Drupal module',
+const SOURCES = [
+    [
+        DrupalDotOrgFeed::class, [
+            'feed_url' => 'https://www.drupal.org/changes/drupal/rss.xml',
+            'message' => '#Drupal core change',
+        ],
+    ],
+    [
+        DrupalDotOrgFeed::class, [
+            'feed_url' => 'https://www.drupal.org/security/all/rss.xml',
+            'message' => '#Drupal security advisory',
+        ],
+    ],
+    [
+        DrupalDotOrgFeed::class, [
+            'feed_url' => 'https://www.drupal.org/section-blog/2603760/feed',
+            'message' => '#Drupal blog entry',
+        ],
+    ],
+    [
+        DrupalDotOrgFeed::class, [
+            'feed_url' => 'https://www.drupal.org/project/project_module/feed/full',
+            'message' => 'New #Drupal module',
+        ],
+    ],
+    [
+        ExtensionRelease::class, [
+            'feed_url' => 'https://www.drupal.org/taxonomy/term/7234/feed',
+        ],
+    ],
 ];
 
 $fileName = rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
@@ -35,41 +61,28 @@ $logger = new CompositeLogger(
 
 $app = new App($logger);
 
+$count = 0;
+foreach (SOURCES as [$class, $config]) {
+    $plugin = new $class();
+    \assert($plugin instanceof SourceInterface);
+    $plugin->setConfig($config);
 
-$results = [];
-foreach (FEEDS as $feedUrl => $type) {
-    if (is_a($type, FeedTypeInterface::class, true)) {
-        $getType = fn(string $url, string $title): ?string => $type::getMessage($url, $title);
-    } elseif (is_string($type)) {
-        $getType = fn(string $url, string $title): ?string => $type;
-    } else {
-        throw new \InvalidArgumentException('Unsupported type');
-    }
-
-    foreach ($app->processFeed($feedUrl) as [$url, $title, $date]) {
-        if ($message = $getType($url, $title)) {
-            $printedDate = date('Y-m-d', $date->getTimestamp());
-            $text = "$message: $title ($printedDate). See $url";
-            $app->postText($text, $url, $date);
-
-            // No hurry.
-            sleep(1);
-
-            $results[$message] ??= 0;
-            $results[$message]++;
+    foreach ($plugin->getItems() as $item) {
+        \assert($item instanceof Item);
+        if ($message = $plugin->getMessage($item)) {
+            if ($app->postText($message, $item->url, $item->time)) {
+                // No hurry.
+                sleep(1);
+                $count++;
+            }
         } else {
-            $logger->warning("Cannot get a message for $feedUrl ($type) with title '$title' and URL '$url'");
+            $logger->warning("Cannot get a message for '$item->title' and URL '$item->url'");
         }
     }
 }
 
-$posted = implode(', ', array_map(
-    fn(string $message): string => "$message ($results[$message])",
-    array_keys($results),
-));
-
-if (empty($posted)) {
+if ($count === 0) {
     $logger->notice('No posts');
 } else {
-    $logger->notice("Posted: $posted");
+    $logger->notice("$count posts");
 }

@@ -2,24 +2,29 @@
 
 declare(strict_types=1);
 
-namespace BSkyDrupal;
+namespace BSkyDrupal\Plugin;
 
+use BSkyDrupal\AbstractSource;
+use BSkyDrupal\DrupalDotOrgFeedTrait;
+use BSkyDrupal\Model\Item;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 use Symfony\Component\Yaml\Yaml;
 
-class ExtensionReleaseFeedType implements FeedTypeInterface
+class ExtensionRelease extends AbstractSource
 {
+    use DrupalDotOrgFeedTrait;
+
     private const string CODE_URL = 'http://drupalcode.org/project';
 
-    public static function getMessage(string $url, string $title): ?string
+    public function getMessage(Item $item): ?string
     {
         $httpClient = Psr18ClientDiscovery::find();
         $uriFactory = Psr17FactoryDiscovery::findUriFactory();
         $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
 
         // Get project name.
-        $path = trim(parse_url($url, PHP_URL_PATH), '/');
+        $path = trim(parse_url($item->url, PHP_URL_PATH), '/');
         [/* project */, $name, /* release */, $version] = explode('/', $path);
         $version = !str_ends_with($version, '-dev') ? $version : substr($version, 0, -4);
 

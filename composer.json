@@ -13,6 +13,7 @@
     "php": ">=8.3",
     "ext-dom": "*",
     "ext-pdo": "*",
+    "knplabs/github-api": "^3.16",
     "monolog/monolog": "^3.8",
     "nyholm/psr7": "^1.8",
     "potibm/phluesky": "^0.4.0",
