@@ -13,10 +13,11 @@ use Monolog\Handler\StreamHandler;
 require_once __DIR__ . '/vendor/autoload.php';
 
 const FEEDS = [
-  'https://www.drupal.org/changes/drupal/rss.xml' => 'core change',
-  'https://www.drupal.org/security/all/rss.xml' => 'security advisory',
-  'https://www.drupal.org/section-blog/2603760/feed' => 'blog',
+  'https://www.drupal.org/changes/drupal/rss.xml' => '#Drupal core change',
+  'https://www.drupal.org/security/all/rss.xml' => '#Drupal security advisory',
+  'https://www.drupal.org/section-blog/2603760/feed' => '#Drupal blog entry',
   'https://www.drupal.org/taxonomy/term/7234/feed' => ExtensionReleaseFeedType::class,
+  'https://www.drupal.org/project/project_module/feed/full' => 'New #Drupal module',
 ];
 
 $fileName = rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
@@ -48,7 +49,7 @@ foreach (FEEDS as $feedUrl => $type) {
     foreach ($app->processFeed($feedUrl) as [$url, $title, $date]) {
         if ($message = $getType($url, $title)) {
             $printedDate = date('Y-m-d', $date->getTimestamp());
-            $text = "#Drupal $message: $title ($printedDate). See $url";
+            $text = "$message: $title ($printedDate). See $url";
             $app->postText($text, $url, $date);
 
             // No hurry.
