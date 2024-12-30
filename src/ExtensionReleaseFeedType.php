@@ -22,8 +22,9 @@ class ExtensionReleaseFeedType implements FeedTypeInterface
         $path = trim(parse_url($url, PHP_URL_PATH), '/');
         [/* project */, $name, /* release */, $version] = explode('/', $path);
         $version = !str_ends_with($version, '-dev') ? $version : substr($version, 0, -4);
-        $uri = $uriFactory->createUri(self::CODE_URL . "/$name/-/raw/$version/$name.info.yml");
 
+        $extensionName = static::getExtensionName($name);
+        $uri = $uriFactory->createUri(self::CODE_URL . "/$name/-/raw/$version/$extensionName.info.yml");
 
         try {
             $request = $requestFactory->createRequest('GET', $uri);
@@ -37,5 +38,14 @@ class ExtensionReleaseFeedType implements FeedTypeInterface
         $extensionType = $info['type'] ?? null;
 
         return $extensionType ? "$extensionType new release" : null;
+    }
+
+    protected static function getExtensionName(string $name): string
+    {
+        // Apply alterations.
+        return match ($name) {
+            'domain_google_analytics' => 'multidomain_google_analytics',
+            default => $name,
+        };
     }
 }
