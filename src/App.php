@@ -23,7 +23,7 @@ class App
     {
     }
 
-    public function postText(string $text, string $url, \DateTimeImmutable $createdAt): bool
+    public function postText(string $text, string $url, \DateTimeImmutable $createdAt): RecordResponse|false
     {
         if ($this->isUrlRegistered($url)) {
             // Already posted.
@@ -33,15 +33,11 @@ class App
         try {
             $post = Post::create($text);
             $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
-            $response = $this->getApi()->createRecord($post);
-            $this->registerUrl($url);
-            $this->success($response);
+            return $this->getApi()->createRecord($post);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw $exception;
         }
-
-        return true;
     }
 
     private function getPostService(): BlueskyPostService

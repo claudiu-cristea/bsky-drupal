@@ -6,6 +6,7 @@ declare(strict_types=1);
 use BSkyDrupal\App;
 use BSkyDrupal\Logger\CompositeLogger;
 use BSkyDrupal\Model\Item;
+use BSkyDrupal\Plugin\DDev;
 use BSkyDrupal\Plugin\DrupalDotOrgFeed;
 use BSkyDrupal\Plugin\ExtensionRelease;
 use BSkyDrupal\SourceInterface;
@@ -44,6 +45,9 @@ const SOURCES = [
             'feed_url' => 'https://www.drupal.org/taxonomy/term/7234/feed',
         ],
     ],
+    [
+        DDev::class, [],
+    ],
 ];
 
 $fileName = rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
@@ -70,10 +74,13 @@ foreach (SOURCES as [$class, $config]) {
     foreach ($plugin->getItems() as $item) {
         \assert($item instanceof Item);
         if ($message = $plugin->getMessage($item)) {
-            if ($app->postText($message, $item->url, $item->time)) {
+            if ($response = $app->postText($message, $item->url, $item->time)) {
+                $this->registerUrl($item->url);
+                $this->success($response);
+                $count++;
+
                 // No hurry.
                 sleep(1);
-                $count++;
             }
         } else {
             $logger->warning("Cannot get a message for '$item->title' and URL '$item->url'");
