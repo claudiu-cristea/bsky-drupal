@@ -42,7 +42,12 @@ class ExtensionRelease extends AbstractSource
 
         $extensionType = $info['type'] ?? null;
 
-        return $extensionType ? "#Drupal $extensionType release" : null;
+        if (!$extensionType) {
+            return null;
+        }
+
+        $printedDate = date('Y-m-d', $item->time->getTimestamp());
+        return "#Drupal $extensionType release: $item->title ($printedDate). See $item->url";
     }
 
     protected static function getExtensionName(string $name): string

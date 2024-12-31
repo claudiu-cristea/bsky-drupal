@@ -40,6 +40,7 @@ class App
             $this->logger->error($exception->getMessage());
             throw $exception;
         }
+
         return true;
     }
 
