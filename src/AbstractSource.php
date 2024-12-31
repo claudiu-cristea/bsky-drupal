@@ -8,6 +8,9 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractSource implements SourceInterface
 {
+    /**
+     * @var array<non-empty-string, mixed>
+     */
     private array $config = [];
 
     public function __construct(protected LoggerInterface $logger)

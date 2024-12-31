@@ -36,11 +36,11 @@ class App
             $plugin->setConfig($config);
 
             foreach ($plugin->getItems() as $item) {
-                \assert($item instanceof Item);
                 if (!$message = $plugin->getMessage($item)) {
                     $this->logger->warning("Cannot get a message for '$item->title' and URL '$item->url'");
                     return 1;
                 }
+
                 if ($response = $this->postText($message, $item->url, $item->time)) {
                     $this->registerUrl($item->url);
                     $this->success($response);
@@ -96,7 +96,7 @@ class App
     }
 
     /**
-     * @return list<array{string, array}>
+     * @return list<array{string, array<non-empty-string, mixed>}>
      */
     private function getPluginDefinitions(): array
     {
@@ -157,17 +157,20 @@ class App
     private function getPostService(): BlueskyPostService
     {
         if (!isset($this->postService)) {
-            $this->postService = new BlueskyPostService($this->getApi());
+            // @todo Simplify when https://github.com/claudiu-cristea/phluesky/pull/1 lands.
+            $api = $this->getApi();
+            \assert($api instanceof BlueskyApi);
+            $this->postService = new BlueskyPostService($api);
         }
         return $this->postService;
     }
 
-    private function getApi(): BlueskyApi
+    private function getApi(): BlueskyApiInterface
     {
         if (!isset($this->api)) {
             $this->api = new BlueskyApi(
-                getenv('BSKY_USER'),
-                getenv('BSKY_PASS'),
+                (string)getenv('BSKY_USER'),
+                (string)getenv('BSKY_PASS'),
             );
         }
         return $this->api;

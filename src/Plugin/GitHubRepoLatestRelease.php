@@ -6,6 +6,7 @@ namespace BSkyDrupal\Plugin;
 
 use BSkyDrupal\AbstractSource;
 use BSkyDrupal\Model\Item;
+use Github\Api\Repo;
 use Github\AuthMethod;
 use Github\Client;
 use Http\Discovery\Psr18ClientDiscovery;
@@ -28,7 +29,9 @@ class GitHubRepoLatestRelease extends AbstractSource
             $httpClient = Psr18ClientDiscovery::find();
             $client = Client::createWithHttpClient($httpClient);
             $client->authenticate(getenv('BSKY_GITHUB_TOKEN'), AuthMethod::ACCESS_TOKEN);
-            $release = $client->api('repo')->releases()->latest($namespace, $project);
+            $repo = $client->api('repo');
+            \assert($repo instanceof Repo);
+            $release = $repo->releases()->latest($namespace, $project);
             return [
               new Item(
                   $release['html_url'],

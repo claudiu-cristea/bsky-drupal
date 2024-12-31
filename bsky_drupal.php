@@ -10,7 +10,7 @@ use Monolog\Handler\StreamHandler;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$fileName = rtrim(getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
+$fileName = rtrim((string)getenv('BSKY_LOG_PATH'), DIRECTORY_SEPARATOR) . '/bsky_drupal.log';
 $fileHandler = (new RotatingFileHandler($fileName, 3))->setFilenameFormat(
     '{filename}-{date}',
     RotatingFileHandler::FILE_PER_MONTH,

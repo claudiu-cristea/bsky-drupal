@@ -8,6 +8,11 @@ use BSkyDrupal\Model\Item;
 
 interface SourceInterface
 {
+
+    /**
+     * @param array<non-empty-string, mixed> $config
+     * @return $this
+     */
     public function setConfig(array $config): self;
 
     public function getConfigValue(string $name, mixed $default = null): mixed;

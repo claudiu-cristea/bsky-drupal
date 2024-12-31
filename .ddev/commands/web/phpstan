@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Run PHPStan inside the web container
+## Usage: phpstan
+## Example: "ddev phpstan"
+
+vendor/bin/phpstan analyse src bsky_drupal.php environment.php --level=6

@@ -22,3 +22,5 @@ jobs:
               run: ddev composer install
             - name: PHPCS
               run: ddev phpcs
+            - name: PHPStan
+              run: ddev phpstan
