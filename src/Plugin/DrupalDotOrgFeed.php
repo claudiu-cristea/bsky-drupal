@@ -19,6 +19,6 @@ class DrupalDotOrgFeed extends AbstractSource
             throw new \InvalidArgumentException('Missing or invalid `message` config');
         }
         $printedDate = date('Y-m-d', $item->time->getTimestamp());
-        return "$message: $item->title ($printedDate). See $item->url";
+        return "$message: $item->title ($printedDate) #PHP. See $item->url";
     }
 }

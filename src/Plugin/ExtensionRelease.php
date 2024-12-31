@@ -47,7 +47,7 @@ class ExtensionRelease extends AbstractSource
         }
 
         $printedDate = date('Y-m-d', $item->time->getTimestamp());
-        return "#Drupal $extensionType release: $item->title ($printedDate). See $item->url";
+        return "#Drupal $extensionType release: $item->title ($printedDate) #PHP. See $item->url";
     }
 
     protected static function getExtensionName(string $name): string

@@ -36,6 +36,6 @@ class DDev extends AbstractSource
     public function getMessage(Item $item): ?string
     {
         $printedDate = date('Y-m-d', $item->time->getTimestamp());
-        return "New @ddev.bsky.social release: $item->title ($printedDate) #DDEV. See $item->url";
+        return "New @ddev.bsky.social release: $item->title ($printedDate) #DDEV #PHP. See $item->url";
     }
 }
