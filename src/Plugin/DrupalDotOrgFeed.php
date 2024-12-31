@@ -14,8 +14,7 @@ class DrupalDotOrgFeed extends AbstractSource
 
     public function getMessage(Item $item): ?string
     {
-        $message = $this->getConfig()['message'] ?? null;
-        if (!$message) {
+        if (!$message = $this->getConfigValue('message')) {
             throw new \InvalidArgumentException('Missing or invalid `message` config');
         }
         $printedDate = date('Y-m-d', $item->time->getTimestamp());

@@ -10,7 +10,7 @@ interface SourceInterface
 {
     public function setConfig(array $config): self;
 
-    public function getConfig(): array;
+    public function getConfigValue(string $name, mixed $default = null): mixed;
 
     /**
      * @return list<Item>

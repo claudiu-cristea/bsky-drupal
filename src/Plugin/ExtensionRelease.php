@@ -36,7 +36,8 @@ class ExtensionRelease extends AbstractSource
             $request->withHeader('Accept', 'application/json');
             $response = $httpClient->sendRequest($request);
             $info = Yaml::parse($response->getBody()->getContents());
-        } catch (\Exception $e) {
+        } catch (\Throwable $exception) {
+            $this->logException($exception);
             return null;
         }
 

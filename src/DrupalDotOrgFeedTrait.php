@@ -15,24 +15,29 @@ trait DrupalDotOrgFeedTrait
      */
     public function getItems(): array
     {
-        $feedUrl = $this->getConfig()['feed_url'] ?? null;
+        $feedUrl = $this->getConfigValue('feed_url');
         if (!$feedUrl || !filter_var($feedUrl, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException('Missing or invalid `feed_url` config');
         }
 
-        $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
-        $request = $requestFactory->createRequest('GET', $feedUrl);
-
-        $xml = Psr18ClientDiscovery::find()
-          ->sendRequest($request)
-          ->getBody()
-          ->getContents();
-
-        $doc = new \DOMDocument();
-        $doc->loadXML($xml);
-        $xpath = new \DOMXPath($doc);
-
         $newEntries = [];
+        try {
+            $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
+            $request = $requestFactory->createRequest('GET', $feedUrl);
+
+            $xml = Psr18ClientDiscovery::find()
+              ->sendRequest($request)
+              ->getBody()
+              ->getContents();
+
+            $doc = new \DOMDocument();
+            $doc->loadXML($xml);
+            $xpath = new \DOMXPath($doc);
+        } catch (\Throwable $exception) {
+            $this->logException($exception);
+            return $newEntries;
+        }
+
         foreach ($xpath->query('//item', $doc) as $delta => $node) {
             $url = $xpath->query('//item/link', $node)->item($delta)->textContent;
             $title = $xpath->query('//item/title', $node)->item($delta)->textContent;
