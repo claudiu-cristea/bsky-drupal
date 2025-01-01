@@ -24,7 +24,7 @@ definitions:
       project: ddev
       pattern: 'New @ddev.bsky.social release: %s (%s) #DDEV #PHP #Drupal #Wordpress #Typo3. See %s'
       image:
-        file: ddev.png
+        file: ddev.svg
         alt: DDEV logo
   - class: BSkyDrupal\Plugin\GitHubRepoLatestRelease
     config:

@@ -56,7 +56,7 @@ class GitHubRepoLatestRelease extends AbstractSource
         if (empty($config['namespace'])) {
             throw new \InvalidArgumentException('Missing or invalid `namespace` config');
         }
-        if (!empty($config['project'])) {
+        if (empty($config['project'])) {
             throw new \InvalidArgumentException('Missing or invalid `project` config');
         }
     }
