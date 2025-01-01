@@ -1,0 +1,33 @@
+definitions:
+  - class: BSkyDrupal\Plugin\DrupalDotOrgFeed
+    config:
+      feed_url: https://www.drupal.org/changes/drupal/rss.xml
+      message: '#Drupal core change'
+  - class: BSkyDrupal\Plugin\DrupalDotOrgFeed
+    config:
+      feed_url: https://www.drupal.org/security/all/rss.xml
+      message: '#Drupal security advisory'
+  - class: BSkyDrupal\Plugin\DrupalDotOrgFeed
+    config:
+      feed_url: https://www.drupal.org/section-blog/2603760/feed
+      message: '#Drupal blog entry'
+  - class: BSkyDrupal\Plugin\DrupalDotOrgFeed
+    config:
+      feed_url: https://www.drupal.org/project/project_module/feed/full
+      message: 'New #Drupal module'
+  - class: BSkyDrupal\Plugin\ExtensionRelease
+    config:
+      feed_url: https://www.drupal.org/taxonomy/term/7234/feed
+  - class: BSkyDrupal\Plugin\GitHubRepoLatestRelease
+    config:
+      namespace: ddev
+      project: ddev
+      pattern: 'New @ddev.bsky.social release: %s (%s) #DDEV #PHP #Drupal #Wordpress #Typo3. See %s'
+      image:
+        file: image/ddev.png
+        alt: DDEV logo
+  - class: BSkyDrupal\Plugin\GitHubRepoLatestRelease
+    config:
+      namespace: drush-ops
+      project: drush
+      pattern: 'New #Drush release: %s (%s) #Drupal #PHP. See %s'

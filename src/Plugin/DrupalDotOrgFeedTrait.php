@@ -16,10 +16,6 @@ trait DrupalDotOrgFeedTrait
     public function getItems(): array
     {
         $feedUrl = $this->getConfigValue('feed_url');
-        if (!$feedUrl || !filter_var($feedUrl, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException('Missing or invalid `feed_url` config');
-        }
-
         $newEntries = [];
         try {
             $requestFactory = Psr17FactoryDiscovery::findRequestFactory();

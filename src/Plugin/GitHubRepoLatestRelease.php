@@ -47,16 +47,12 @@ class GitHubRepoLatestRelease extends AbstractSource
         throw new \InvalidArgumentException('Missing or invalid `pattern` config');
     }
 
-    public function getImage(): ?Image
-    {
-        return $this->getConfigValue('image');
-    }
-
     /**
      * {@inheritdoc}
      */
     protected function validateConfig(array $config): void
     {
+        parent::validateConfig($config);
         if (empty($config['namespace'])) {
             throw new \InvalidArgumentException('Missing or invalid `namespace` config');
         }

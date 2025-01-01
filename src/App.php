@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace BSkyDrupal;
 
 use BSkyDrupal\Model\Image;
-use BSkyDrupal\Plugin\DrupalDotOrgFeed;
-use BSkyDrupal\Plugin\ExtensionRelease;
-use BSkyDrupal\Plugin\GitHubRepoLatestRelease;
 use BSkyDrupal\Plugin\SourceInterface;
 use potibm\Bluesky\BlueskyApi;
 use potibm\Bluesky\BlueskyApiInterface;
@@ -15,6 +12,7 @@ use potibm\Bluesky\BlueskyPostService;
 use potibm\Bluesky\Feed\Post;
 use potibm\Bluesky\Response\RecordResponse;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class App
 {
@@ -31,11 +29,7 @@ class App
     public function run(): int
     {
         $count = 0;
-        foreach ($this->getPluginDefinitions() as [$class, $config]) {
-            $plugin = new $class($this->logger);
-            \assert($plugin instanceof SourceInterface);
-            $plugin->setConfig($config);
-
+        foreach ($this->getPlugins() as $plugin) {
             foreach ($plugin->getItems() as $item) {
                 if (!$message = $plugin->getMessage($item)) {
                     $this->logger->warning("Cannot get a message for '$item->title' and URL '$item->url'");
@@ -75,12 +69,10 @@ class App
 
         try {
             $post = Post::create($text);
-            $post = $this->getPostService()
-              ->addFacetsFromMentionsAndLinksAndTags($post);
+            $post = $this->getPostService()->addFacetsFromMentionsAndLinksAndTags($post);
             if ($image) {
                 $post = $this->getPostService()->addImage($post, $image->file, $image->alt);
             }
-
             return $this->getApi()->createRecord($post);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
@@ -154,62 +146,16 @@ class App
     }
 
     /**
-     * @return list<array{string, array<non-empty-string, mixed>}>
+     * @return iterable<SourceInterface>
      */
-    private function getPluginDefinitions(): array
+    private function getPlugins(): iterable
     {
-        return [
-          [
-            DrupalDotOrgFeed::class,
-            [
-              'feed_url' => 'https://www.drupal.org/changes/drupal/rss.xml',
-              'message' => '#Drupal core change',
-            ],
-          ],
-          [
-            DrupalDotOrgFeed::class,
-            [
-              'feed_url' => 'https://www.drupal.org/security/all/rss.xml',
-              'message' => '#Drupal security advisory',
-            ],
-          ],
-          [
-            DrupalDotOrgFeed::class,
-            [
-              'feed_url' => 'https://www.drupal.org/section-blog/2603760/feed',
-              'message' => '#Drupal blog entry',
-            ],
-          ],
-          [
-            DrupalDotOrgFeed::class,
-            [
-              'feed_url' => 'https://www.drupal.org/project/project_module/feed/full',
-              'message' => 'New #Drupal module',
-            ],
-          ],
-          [
-            ExtensionRelease::class,
-            [
-              'feed_url' => 'https://www.drupal.org/taxonomy/term/7234/feed',
-            ],
-          ],
-          [
-            GitHubRepoLatestRelease::class,
-            [
-              'namespace' => 'ddev',
-              'project' => 'ddev',
-              'pattern' => 'New @ddev.bsky.social release: %s (%s) #DDEV #PHP #Drupal #Wordpress #Typo3. See %s',
-              'image' => new Image(__DIR__.'/../image/ddev.png', 'DDEV logo'),
-            ],
-          ],
-          [
-            GitHubRepoLatestRelease::class,
-            [
-              'namespace' => 'drush-ops',
-              'project' => 'drush',
-              'pattern' => 'New #Drush release: %s (%s) #Drupal #PHP. See %s',
-            ],
-          ],
-        ];
+        $definitions = Yaml::parse(file_get_contents(__DIR__ . '/../plugin_definitions.yml'))['definitions'] ?? [];
+        foreach ($definitions as $definition) {
+            $plugin = new $definition['class']($this->logger);
+            \assert($plugin instanceof SourceInterface);
+            $plugin->setConfig($definition['config'] ?? []);
+            yield $plugin;
+        }
     }
 }

@@ -32,6 +32,9 @@ abstract class AbstractSource implements SourceInterface
 
     public function getImage(): ?Image
     {
+        if ($image = $this->getConfigValue('image')) {
+            return new Image($image['file'], $image['alt']);
+        }
         return null;
     }
 
@@ -50,5 +53,21 @@ abstract class AbstractSource implements SourceInterface
     /**
      * @param array<non-empty-string, mixed> $config
      */
-    abstract protected function validateConfig(array $config): void;
+    protected function validateConfig(array $config): void
+    {
+        if (!array_key_exists('image', $config)) {
+            return;
+        }
+        if (!is_array($config['image']) || (empty($config['image']['file']) || empty($config['image']['alt']))) {
+            throw new \InvalidArgumentException(
+                'The `image` config should be an array with two non-empty keys: `file` and `alt`'
+            );
+        }
+        if (!file_exists($config['image']['file']) || !is_readable($config['image']['file'])) {
+            throw new \InvalidArgumentException("The `image.file` config file doesn't exist or is not readable");
+        }
+        if (!is_string($config['image']['alt'])) {
+            throw new \InvalidArgumentException("The `image.alt` config should be a string");
+        }
+    }
 }
