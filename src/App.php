@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace BSkyDrupal;
 
-use BSkyDrupal\Model\Item;
+use BSkyDrupal\Model\Image;
 use BSkyDrupal\Plugin\DrupalDotOrgFeed;
 use BSkyDrupal\Plugin\ExtensionRelease;
 use BSkyDrupal\Plugin\GitHubRepoLatestRelease;
+use BSkyDrupal\Plugin\SourceInterface;
 use potibm\Bluesky\BlueskyApi;
 use potibm\Bluesky\BlueskyApiInterface;
 use potibm\Bluesky\BlueskyPostService;
@@ -41,7 +42,8 @@ class App
                     return 1;
                 }
 
-                if ($response = $this->postText($message, $item->url, $item->time)) {
+                $image = $plugin->getImage();
+                if ($response = $this->post($message, $item->url, $item->time, $image)) {
                     $this->registerUrl($item->url);
                     $this->success($response);
                     $count++;
@@ -60,10 +62,11 @@ class App
         return 0;
     }
 
-    private function postText(
+    private function post(
         string $text,
         string $url,
         \DateTimeInterface $createdAt,
+        ?Image $image = null,
     ): RecordResponse|false {
         if ($this->isUrlRegistered($url)) {
             // Already posted.
@@ -74,6 +77,10 @@ class App
             $post = Post::create($text);
             $post = $this->getPostService()
               ->addFacetsFromMentionsAndLinksAndTags($post);
+            if ($image) {
+                $post = $this->getPostService()->addImage($post, $image->file, $image->alt);
+            }
+
             return $this->getApi()->createRecord($post);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
@@ -93,6 +100,57 @@ class App
         $postId = $response->getUri()->getRecord();
         $user = getenv('BSKY_USER');
         $this->logger->notice("Success: https://bsky.app/profile/$user/post/$postId");
+    }
+
+    private function getPostService(): BlueskyPostService
+    {
+        if (!isset($this->postService)) {
+            // @todo Simplify when https://github.com/potibm/phluesky/pull/39 lands.
+            $api = $this->getApi();
+            \assert($api instanceof BlueskyApi);
+            $this->postService = new BlueskyPostService($api);
+        }
+        return $this->postService;
+    }
+
+    private function getApi(): BlueskyApiInterface
+    {
+        if (!isset($this->api)) {
+            $this->api = new BlueskyApi(
+                (string)getenv('BSKY_USER'),
+                (string)getenv('BSKY_PASS'),
+            );
+        }
+        return $this->api;
+    }
+
+    private function getConnection(): \PDO
+    {
+        if (!isset($this->pdo)) {
+            $table = getenv('BSKY_SQLITE_TABLE');
+            $this->pdo = new \PDO('sqlite:' . getenv('BSKY_SQLITE_DATABASE'));
+            $sql = <<<SQL
+                CREATE TABLE IF NOT EXISTS $table (
+                    url VARCHAR(255) NOT NULL PRIMARY KEY,
+                    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                SQL;
+            $this->pdo->query($sql);
+        }
+        return $this->pdo;
+    }
+
+    private function isUrlRegistered(string $url): bool
+    {
+        $table = getenv('BSKY_SQLITE_TABLE');
+        try {
+            return (bool)$this->getConnection()
+              ->query("SELECT url FROM $table WHERE url = '$url'")
+              ->fetch();
+        } catch (\Throwable $throwable) {
+            $this->logger->error($throwable->getMessage());
+            throw $throwable;
+        }
     }
 
     /**
@@ -141,6 +199,7 @@ class App
               'namespace' => 'ddev',
               'project' => 'ddev',
               'pattern' => 'New @ddev.bsky.social release: %s (%s) #DDEV #PHP #Drupal #Wordpress #Typo3. See %s',
+              'image' => new Image(__DIR__.'/../image/ddev.png', 'DDEV logo'),
             ],
           ],
           [
@@ -152,56 +211,5 @@ class App
             ],
           ],
         ];
-    }
-
-    private function getPostService(): BlueskyPostService
-    {
-        if (!isset($this->postService)) {
-            // @todo Simplify when https://github.com/claudiu-cristea/phluesky/pull/1 lands.
-            $api = $this->getApi();
-            \assert($api instanceof BlueskyApi);
-            $this->postService = new BlueskyPostService($api);
-        }
-        return $this->postService;
-    }
-
-    private function getApi(): BlueskyApiInterface
-    {
-        if (!isset($this->api)) {
-            $this->api = new BlueskyApi(
-                (string)getenv('BSKY_USER'),
-                (string)getenv('BSKY_PASS'),
-            );
-        }
-        return $this->api;
-    }
-
-    private function getConnection(): \PDO
-    {
-        if (!isset($this->pdo)) {
-            $table = getenv('BSKY_SQLITE_TABLE');
-            $this->pdo = new \PDO('sqlite:' . getenv('BSKY_SQLITE_DATABASE'));
-            $sql = <<<SQL
-                CREATE TABLE IF NOT EXISTS $table (
-                    url VARCHAR(255) NOT NULL PRIMARY KEY,
-                    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-                );
-                SQL;
-            $this->pdo->query($sql);
-        }
-        return $this->pdo;
-    }
-
-    private function isUrlRegistered(string $url): bool
-    {
-        $table = getenv('BSKY_SQLITE_TABLE');
-        try {
-            return (bool)$this->getConnection()
-              ->query("SELECT url FROM $table WHERE url = '$url'")
-              ->fetch();
-        } catch (\Throwable $throwable) {
-            $this->logger->error($throwable->getMessage());
-            throw $throwable;
-        }
     }
 }

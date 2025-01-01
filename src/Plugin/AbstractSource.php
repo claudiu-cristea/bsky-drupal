@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace BSkyDrupal;
+namespace BSkyDrupal\Plugin;
 
+use BSkyDrupal\Model\Image;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractSource implements SourceInterface
@@ -19,6 +20,7 @@ abstract class AbstractSource implements SourceInterface
 
     public function setConfig(array $config): SourceInterface
     {
+        $this->validateConfig($config);
         $this->config = $config;
         return $this;
     }
@@ -26,6 +28,11 @@ abstract class AbstractSource implements SourceInterface
     public function getConfigValue(string $name, mixed $default = null): mixed
     {
         return $this->config[$name] ?? $default;
+    }
+
+    public function getImage(): ?Image
+    {
+        return null;
     }
 
     protected function logException(\Throwable $exception): void
@@ -39,4 +46,9 @@ abstract class AbstractSource implements SourceInterface
         );
         $this->logger->error($message);
     }
+
+    /**
+     * @param array<non-empty-string, mixed> $config
+     */
+    abstract protected function validateConfig(array $config): void;
 }

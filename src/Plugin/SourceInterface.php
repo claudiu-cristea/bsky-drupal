@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace BSkyDrupal;
+namespace BSkyDrupal\Plugin;
 
+use BSkyDrupal\Model\Image;
 use BSkyDrupal\Model\Item;
 
 interface SourceInterface
@@ -23,4 +24,6 @@ interface SourceInterface
     public function getItems(): array;
 
     public function getMessage(Item $item): ?string;
+
+    public function getImage(): ?Image;
 }

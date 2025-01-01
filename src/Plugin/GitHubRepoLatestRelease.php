@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BSkyDrupal\Plugin;
 
-use BSkyDrupal\AbstractSource;
+use BSkyDrupal\Model\Image;
 use BSkyDrupal\Model\Item;
 use Github\Api\Repo;
 use Github\AuthMethod;
@@ -18,20 +18,13 @@ class GitHubRepoLatestRelease extends AbstractSource
      */
     public function getItems(): array
     {
-        if (!$namespace = $this->getConfigValue('namespace')) {
-            throw new \InvalidArgumentException('Missing or invalid `namespace` config');
-        }
-        if (!$project = $this->getConfigValue('project')) {
-            throw new \InvalidArgumentException('Missing or invalid `project` config');
-        }
-
         try {
             $httpClient = Psr18ClientDiscovery::find();
             $client = Client::createWithHttpClient($httpClient);
             $client->authenticate(getenv('BSKY_GITHUB_TOKEN'), AuthMethod::ACCESS_TOKEN);
             $repo = $client->api('repo');
             \assert($repo instanceof Repo);
-            $release = $repo->releases()->latest($namespace, $project);
+            $release = $repo->releases()->latest($this->getConfigValue('namespace'), $this->getConfigValue('project'));
             return [
               new Item(
                   $release['html_url'],
@@ -52,5 +45,23 @@ class GitHubRepoLatestRelease extends AbstractSource
             return sprintf($pattern, $item->title, $printedDate, $item->url);
         }
         throw new \InvalidArgumentException('Missing or invalid `pattern` config');
+    }
+
+    public function getImage(): ?Image
+    {
+        return $this->getConfigValue('image');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function validateConfig(array $config): void
+    {
+        if (empty($config['namespace'])) {
+            throw new \InvalidArgumentException('Missing or invalid `namespace` config');
+        }
+        if (!empty($config['project'])) {
+            throw new \InvalidArgumentException('Missing or invalid `project` config');
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BSkyDrupal;
+namespace BSkyDrupal\Plugin;
 
 use BSkyDrupal\Model\Item;
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -46,5 +46,16 @@ trait DrupalDotOrgFeedTrait
         }
 
         return array_reverse($newEntries);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function validateConfig(array $config): void
+    {
+        $feedUrl = $config['feed_url'] ?? null;
+        if (!$feedUrl || !filter_var($feedUrl, FILTER_VALIDATE_URL)) {
+            throw new \InvalidArgumentException('Missing or invalid `feed_url` config');
+        }
     }
 }

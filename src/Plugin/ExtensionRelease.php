@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace BSkyDrupal\Plugin;
 
-use BSkyDrupal\AbstractSource;
-use BSkyDrupal\DrupalDotOrgFeedTrait;
 use BSkyDrupal\Model\Item;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
@@ -28,7 +26,7 @@ class ExtensionRelease extends AbstractSource
         [/* project */, $name, /* release */, $version] = explode('/', $path);
         $version = !str_ends_with($version, '-dev') ? $version : substr($version, 0, -4);
 
-        $extensionName = static::getExtensionName($name);
+        $extensionName = $this->getExtensionName($name);
         $uri = $uriFactory->createUri(self::CODE_URL . "/$name/-/raw/$version/$extensionName.info.yml");
 
         try {
@@ -51,7 +49,7 @@ class ExtensionRelease extends AbstractSource
         return "#Drupal $extensionType release: $item->title ($printedDate) #PHP. See $item->url";
     }
 
-    protected static function getExtensionName(string $name): string
+    protected function getExtensionName(string $name): string
     {
         // Apply alterations.
         return match ($name) {
