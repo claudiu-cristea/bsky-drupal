@@ -22,8 +22,9 @@ class App
 
     private \PDO $pdo;
 
-    public function __construct(private readonly LoggerInterface $logger)
-    {
+    public function __construct(
+        private readonly LoggerInterface $logger,
+    ) {
     }
 
     public function run(): int
