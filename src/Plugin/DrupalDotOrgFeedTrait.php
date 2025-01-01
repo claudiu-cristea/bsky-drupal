@@ -49,7 +49,7 @@ trait DrupalDotOrgFeedTrait
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<non-empty-string, mixed> $config
      */
     protected function validateConfig(array $config): void
     {
