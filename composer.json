@@ -13,6 +13,7 @@
     "php": ">=8.3",
     "ext-dom": "*",
     "ext-pdo": "*",
+    "jakeasmith/http_build_url": "^1.0",
     "knplabs/github-api": "^3.16",
     "monolog/monolog": "^3.8",
     "nyholm/psr7": "^1.8",

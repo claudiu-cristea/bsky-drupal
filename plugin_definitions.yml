@@ -15,9 +15,12 @@ definitions:
     config:
       feed_url: https://www.drupal.org/project/project_module/feed/full
       message: 'New #Drupal module'
-  - class: BSkyDrupal\Plugin\ExtensionRelease
+  - class: BSkyDrupal\Plugin\DrupalDotOrgRestApi7
     config:
-      feed_url: https://www.drupal.org/taxonomy/term/7234/feed
+      type: project_release
+      sort: created
+      direction: DESC
+      limit: 10
   - class: BSkyDrupal\Plugin\GitHubRepoLatestRelease
     config:
       namespace: ddev
